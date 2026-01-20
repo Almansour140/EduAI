@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduAI – Official Learning AI</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin:0;
+  transition: background 0.4s, color 0.4s;
+  background: linear-gradient(135deg, #f0f4f8, #e2e8f0);
+  color: #111;
+}
+body.dark {
+  background: linear-gradient(135deg, #0f172a, #020617);
+  color: #f1f5f9;
+}
+
+/* SIDEBAR */
+#sidebar {
+  position: fixed; left:0; top:0; width:240px; height:100%;
+  background:#0c7a5d; padding-top:60px; color:white; overflow:auto;
+}
+#sidebar h2 { text-align:center; }
+#sidebar a { display:block; color:white; padding:12px 20px; text-decoration:none; }
+#sidebar a:hover { background:#095b42; }
+
+/* CONTENT */
+#content { margin-left:260px; padding:20px; }
+
+/* HEADER */
+header { display:flex; align-items:center; gap:15px; background:#10a37f; color:white; padding:20px; border-radius:12px; }
+header img { height:80px; }
+
+/* CARDS */
+.card { background:white; padding:20px; border-radius:12px; margin-top:20px; box-shadow:0 6px 20px rgba(0,0,0,0.08); }
+body.dark .card { background:#1e293b; }
+
+/* INPUTS */
+textarea, input { width:100%; padding:12px; margin-top:10px; border-radius:8px; border:1px solid #ccc; font-size:16px; }
+body.dark textarea, body.dark input { background:#020617; color:white; border:1px solid #334155; }
+
+/* BUTTONS */
+button { background:#10a37f; color:white; border:none; padding:12px 16px; margin-top:12px; border-radius:8px; cursor:pointer; }
+button:hover { opacity:0.9; }
+
+/* RESULTS */
+.result { background:#eef2f3; padding:12px; margin-top:10px; border-radius:8px; }
+body.dark .result { background:#020617; }
+.correct { color:#22c55e; font-weight:bold; }
+.wrong { color:#ef4444; font-weight:bold; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <h2>EduAI</h2>
+  <a href="#input">Paste Text</a>
+  <a href="#summary">Summary</a>
+  <a href="#points">Main Points</a>
+  <a href="#quiz">Quiz</a>
+  <a href="#answers">Results</a>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<header>
+  <img src="school-logo.png" alt="School Logo">
+  <div>
+    <h1>EduAI</h1>
+    <p>Smart learning powered by AI</p>
+  </div>
+</header>
+
+<div style="display:flex; gap:10px; margin-top:15px;">
+  <button onclick="toggleLanguage()" id="langBtn">English</button>
+  <button onclick="toggleDarkMode()" id="darkBtn">Toggle Dark Mode</button>
+</div>
+
+<!-- INPUT -->
+<div class="card" id="input">
+<h2 id="labelPasteText">Step 1: Paste Your Text</h2>
+<textarea id="inputText" rows="12" placeholder="Paste your educational text here..."></textarea>
+<button id="generateBtn" onclick="generateQuiz()">Generate Summary & Questions</button>
+</div>
+
+<!-- SUMMARY -->
+<div class="card" id="summary">
+<h2 id="labelSummary">Summary</h2>
+<div id="summaryText" class="result"></div>
+</div>
+
+<!-- MAIN POINTS -->
+<div class="card" id="points">
+<h2 id="labelPoints">Main Points</h2>
+<div id="pointsText" class="result"></div>
+</div>
+
+<!-- QUIZ -->
+<div class="card" id="quiz">
+<h2 id="labelQuiz">Questions</h2>
+<div id="quizFields" class="result"></div>
+<button id="submitBtn" onclick="checkAnswers()" style="display:none;">Submit Answers</button>
+</div>
+
+<!-- RESULTS -->
+<div class="card" id="answers">
+<h2 id="labelResults">Results</h2>
+<div id="answersText" class="result"></div>
+</div>
+
+</div>
+
+<script>
+let quizData = [];
+let lang = "en";
+
+const translations = {
+  en: {
+    pasteText: "Step 1: Paste Your Text",
+    generateBtn: "Generate Summary & Questions",
+    summary: "Summary",
+    points: "Main Points",
+    quiz: "Questions",
+    submitBtn: "Submit Answers",
+    results: "Results",
+    placeholderAnswer: "Type answer here",
+    alertPaste: "Please paste text first!",
+    scoreText: "Score",
+    correct: "✔ Correct",
+    wrong: "❌ Correct Answer:"
+  },
+  ar: {
+    pasteText: "الخطوة 1: ضع النص هنا",
+    generateBtn: "إنشاء الملخص والأسئلة",
+    summary: "الملخص",
+    points: "النقاط الرئيسية",
+    quiz: "الأسئلة",
+    submitBtn: "تأكيد الإجابات",
+    results: "النتائج",
+    placeholderAnswer: "اكتب إجابتك هنا",
+    alertPaste: "الرجاء لصق النص أولاً!",
+    scoreText: "النتيجة",
+    correct: "✔ صحيح",
+    wrong: "❌ الإجابة الصحيحة:"
+  }
+};
+
+function toggleDarkMode(){
+  document.body.classList.toggle("dark");
+  document.getElementById("darkBtn").innerText=document.body.classList.contains("dark")?"Toggle Light Mode":"Toggle Dark Mode";
+}
+
+function toggleLanguage(){
+  lang = lang==="en"?"ar":"en";
+  document.body.dir = lang==="ar"?"rtl":"ltr";
+  document.getElementById("langBtn").innerText = lang==="ar"?"Arabic":"English";
+  document.getElementById("labelPasteText").innerText = translations[lang].pasteText;
+  document.getElementById("generateBtn").innerText = translations[lang].generateBtn;
+  document.getElementById("labelSummary").innerText = translations[lang].summary;
+  document.getElementById("labelPoints").innerText = translations[lang].points;
+  document.getElementById("labelQuiz").innerText = translations[lang].quiz;
+  document.getElementById("submitBtn").innerText = translations[lang].submitBtn;
+  document.getElementById("labelResults").innerText = translations[lang].results;
+  if(inputText.value.trim()) generateQuiz();
+}
+
+// ====== AI-STYLE QUESTION GENERATION ======
+function generateQuiz() {
+  const text = inputText.value.trim();
+  if (!text) return alert(translations[lang].alertPaste);
+
+  let sentences = text.match(/[^.!?]+[.!?]?/g) || [text];
+
+  // Summary: first 3 sentences
+  summaryText.innerHTML = sentences.slice(0,3).join(". ") + ".";
+
+  // Main points: first 4 sentences
+  pointsText.innerHTML = sentences.slice(0,4).map(s=>"• "+s.trim()).join("<br>");
+
+  // AI-style questions
+  quizData = sentences.slice(0,3);
+  quizFields.innerHTML = quizData.map((s,i)=>`
+    <p>Question ${i+1}: ${generateQuestionFromSentence(s)}</p>
+    <input id="ans${i}" placeholder="${translations[lang].placeholderAnswer}">
+  `).join("");
+
+  submitBtn.style.display="block";
+  answersText.innerHTML="";
+}
+
+// Convert sentence to AI-style question
+function generateQuestionFromSentence(sentence){
+  sentence = sentence.trim();
+  if(sentence.length<20) return sentence+"?";
+  if(sentence.toLowerCase().includes("is")) return "What is "+sentence.split("is")[0].trim()+"?";
+  if(sentence.toLowerCase().includes("are")) return "What are "+sentence.split("are")[0].trim()+"?";
+  if(sentence.toLowerCase().includes("can")) return "What can "+sentence.split("can")[0].trim()+" do?";
+  return "Explain: "+sentence;
+}
+
+function checkAnswers(){
+  let score=0, output="";
+  quizData.forEach((a,i)=>{
+    const user=document.getElementById("ans"+i).value.trim().toLowerCase();
+    const correct=a.trim().toLowerCase();
+    if(user && correct.includes(user)){
+      output+=`<p class="correct">${translations[lang].correct}</p>`;
+      score++;
+    } else {
+      output+=`<p class="wrong">${translations[lang].wrong} ${a}</p>`;
+    }
+  });
+  output+=`<h3>${translations[lang].scoreText}: ${score}/${quizData.length}</h3>`;
+  answersText.innerHTML=output;
+}
+</script>
+
+</body>
+</html>
